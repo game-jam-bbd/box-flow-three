@@ -3,6 +3,8 @@ import { CameraHelper } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+let gameState = 'playing';
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 
     75, 
@@ -241,7 +243,6 @@ const msPerFrame = 1000 / fps;
 let frames = 0;
 
 function animate() {
-
     const msNow = window.performance.now();
     const msPassed = msNow - msPrev;
 
@@ -251,35 +252,49 @@ function animate() {
     msPrev = msNow - excessTime;
 
     frames++;
-    const animationId = window.requestAnimationFrame(animate);
+    window.requestAnimationFrame(animate);
     renderer.render(scene, camera);
 
-    // Movement update
-    cube.velocity.x = 0;
-    cube.velocity.z = 0;
+    if (gameState === 'playing') {
+        // Movement update
+        cube.velocity.x = 0;
+        cube.velocity.z = 0;
 
-    if (keys.a.pressed) {
-        cube.velocity.x = -0.05;
-    } else if (keys.d.pressed) {
-        cube.velocity.x = 0.05;
-    }
-
-    if (keys.w.pressed) {
-        cube.velocity.z = -0.05;
-    } else if (keys.s.pressed) {
-        cube.velocity.z = 0.05;
-    }
-
-    cube.update(ground);
-
-    enemies.forEach(enemy => {
-        enemy.update(ground);
-        if (enemy.boxCollision({ box1: cube, box2: enemy })) {
-            console.log("collision detected");
-            window.cancelAnimationFrame(animationId);
-            
+        if (keys.a.pressed) {
+            cube.velocity.x = -0.05;
+        } else if (keys.d.pressed) {
+            cube.velocity.x = 0.05;
         }
-    });
+
+        if (keys.w.pressed) {
+            cube.velocity.z = -0.05;
+        } else if (keys.s.pressed) {
+            cube.velocity.z = 0.05;
+        }
+
+        cube.update(ground);
+
+        enemies.forEach(enemy => {
+            enemy.update(ground);
+            if (enemy.boxCollision({ box1: cube, box2: enemy })) {
+                console.log("collision detected");
+                gameState = 'paused';
+                setTimeout(restartGame, 10000); // Restart after 10 seconds
+            }
+        });
+    }
+}
+
+function restartGame() {
+    // Reset positions
+    cube.position.set(0, 0, 0);
+    enemy.position.set(0, 0, -4);
+    
+    // Reset velocities
+    cube.velocity = { x: 0, y: -0.00005, z: 0 };
+    enemy.velocity = { x: 0, y: 0.001, z: 0.008 };
+    
+    gameState = 'playing';
 }
 
 renderer.setAnimationLoop(animate); // This handles the loop internally
