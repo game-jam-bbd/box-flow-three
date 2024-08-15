@@ -2,38 +2,8 @@ import * as THREE from 'three';
 import { CameraHelper } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-let gameState = 'playing';
-
-function stopGame() {
-    if (gameState === 'playing') {
-        gameState = 'paused';
-        console.log("Game paused");
-        
-        // Halt all objects
-        cube.velocity = { x: 0, y: 0, z: 0 };
-        enemies.forEach(enemy => {
-            enemy.velocity = { x: 0, y: 0, z: 0 };
-        });
-    }
-}
-
-function resumeGame() {
-    if (gameState === 'paused') {
-        gameState = 'playing';
-        console.log("Game resumed");
-        
-        // Reset object velocities
-        cube.velocity = { x: 0, y: -0.00005, z: 0 };
-        enemies.forEach((enemy, index) => {
-            enemy.velocity = { x: 0, y: 0.001, z: 0.008 };
-        });
-        
-        // Restart the animation loop
-        msPrev = window.performance.now();
-        requestAnimationFrame(animate);
-    }
-}
+import { Box } from './utils/box.js';
+import { Ground } from './utils/ground.js';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 
@@ -43,119 +13,19 @@ const camera = new THREE.PerspectiveCamera(
     1000 
 );
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
 renderer.shadowMap.enabled = true;
 renderer.setSize( 
     window.innerWidth, 
     window.innerHeight 
 );
+
+
 document.body.appendChild( renderer.domElement );
 
 const controls = new OrbitControls(camera, renderer.domElement);
-
-class Box extends THREE.Mesh {
-    constructor ({ 
-        width, 
-        height, 
-        depth, 
-        color, 
-        velocity = {
-            x: 0,
-            y: 0,
-            z: 0
-        },
-        position = {
-            x: 0,
-            y: 0,
-            z: 0
-        }
-    }) {
-        super(
-            new THREE.BoxGeometry( width, height, depth ), 
-            new THREE.MeshStandardMaterial( { color } )
-        );
-        this.height = height;
-        this.width = width;
-        this.depth = depth;
-        this.color = color;
-
-        this.position.set(position.x, position.y, position.z);
-
-        this.bottom = this.position.y - this.height / 2;
-        this.top = this.position.y + this.height / 2;
-
-        this.right = this.position.x + this.width / 2;
-        this.left = this.position.x - this.width / 2;
-
-        this.front = this.position.z + this.depth / 2;
-        this.back = this.position.z - this.depth / 2;
-
-        this.velocity = velocity;
-        this.gravity = -0.002;
-    }
-
-    updateSides() {
-        this.right = this.position.x + this.width / 2;
-        this.left = this.position.x - this.width / 2;
-
-        this.bottom = this.position.y - this.height / 2;
-        this.top = this.position.y + this.height / 2;
-
-        this.front = this.position.z + this.depth / 2;
-        this.back = this.position.z - this.depth / 2;
-    }
-
-    update(ground) {
-
-        this.updateSides();
-        
-        this.position.x += this.velocity.x;
-        this.position.z += this.velocity.z; // will uncomment if we want cube to move to the front
-
-        // detect collision for x axis
-        const xCollision = this.right >= ground.left && this.left <= ground.right;
-        const zCollision = this.front <= ground.front && this.back >= ground.back;
-        if (xCollision && zCollision) {
-            //this.velocity.x = 0;
-
-        }
-
-        this.applyGravity(ground);
-    }
-
-    applyGravity(ground) {
-        this.velocity.y += this.gravity;
-
-        //if (this.bottom + this.velocity.y <= ground.top) {
-        //    // everytime we hit the ground
-        //    //this.velocity.y *= 0.8; // increase the decelaration 
-        //    this.velocity.y = -this.velocity.y;
-        //}
-        //else {
-        //    // otherwise, keep fallin
-        //    this.position.y += this.velocity.y;
-        //}
-        if (this.boxCollision({
-            box1: this,
-            box2: ground
-        })) {
-            this.velocity.y *= 0.8;
-            this.velocity.y = -this.velocity.y;
-        }
-        else {
-            this.position.y += this.velocity.y;
-        }
-    }
-
-    boxCollision({ box1, box2 }) {
-        // detect collision on box from every angle
-        const xCollision = box1.right >= box2.left && box1.left <= box2.right;
-        const yCollision = (box1.bottom + box1.velocity.y) <= box2.top && box1.top >= box2.bottom;
-        const zCollision = box1.front <= box2.front && box1.back >=box2.back;
-
-        return xCollision && yCollision && zCollision;
-    }
-}
 
 const cube = new Box({
     width: 1,      // x
@@ -172,10 +42,10 @@ cube.castShadow = true;
 scene.add( cube );
 
 const ground = new Box({
-    width: 5,
+    width: 10,
     height: 0.5,
-    depth: 10,
-    color: 0x0000ff,
+    depth: 50,
+    color: "#0369a1",
     position: {
         x: 0,
         y: -2,
@@ -183,14 +53,18 @@ const ground = new Box({
     }
 });
 
+//ground.material = Ground();
+
 ground.receiveShadow = true;
 scene.add( ground );
 
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.castShadow = true;
 light.position.y = 4;
-light.position.z = 3;
+light.position.z = 1;
 scene.add( light );
+
+scene.add( new THREE.AmbientLight(0xffffff, 0.5) );
 
 camera.position.z = 5;
 
@@ -244,99 +118,75 @@ window.addEventListener('keyup', (event) => {
     }
 });
 
+const enemies = [];
 
-const enemy = new Box({
-    width: 1,      // x
-    height: 1,     // y
-    depth: 1,      // z
-    color: 'red',
-    velocity: {
-        x: 0,
-        y: 0.001,
-        z: 0.008
-    },
-    position: {
-        x: 0,
-        y: 0,
-        z: -4
-    }
-});
-
-enemy.castShadow = true;
-scene.add(enemy);
-
-const enemies = [enemy];
-
-let msPrev = window.performance.now();
-const fps = 60;
-const msPerFrame = 1000 / fps;
 let frames = 0;
+let spawnRate = 200;
 
 function animate() {
-    if (gameState === 'paused') {
-        return;
-    }
+    //const deltaTime = time - lastTime;
 
-    const msNow = window.performance.now();
-    const msPassed = msNow - msPrev;
+    //const animationId = window.requestAnimationFrame( animate );
+    //const animationId = renderer.requestAnimationFrame( animate );
+    //cube.rotation.x += 0.05;
+    //cube.rotation.y += 0.05;
+    renderer.render( scene, camera );
 
-    if (msPassed < msPerFrame) {
-        requestAnimationFrame(animate);
-        return;
-    }
-
-    const excessTime = msPassed % msPerFrame;
-    msPrev = msNow - excessTime;
-
-    frames++;
-    
-    // Movement update
-    cube.velocity.x = 0;
+    // movement update
+    cube.velocity.x = 0; // for every frame, reset velocity
     cube.velocity.z = 0;
-
     if (keys.a.pressed) {
-        cube.velocity.x = -0.05;
-    } else if (keys.d.pressed) {
-        cube.velocity.x = 0.05;
+        cube.velocity.x = -0.09; // only move cube if key is pressed
+    }
+    else if (keys.d.pressed) {
+        cube.velocity.x = 0.09;
     }
 
     if (keys.w.pressed) {
-        cube.velocity.z = -0.05;
-    } else if (keys.s.pressed) {
-        cube.velocity.z = 0.05;
+        cube.velocity.z = -0.09;
     }
-
+    else if (keys.s.pressed) {
+        cube.velocity.z = 0.09;
+    }
     cube.update(ground);
-
     enemies.forEach(enemy => {
         enemy.update(ground);
-        if (enemy.boxCollision({ box1: cube, box2: enemy })) {
-            console.log("collision detected");
-            stopGame();
-            setTimeout(restartGame, 10000); // Restart game after 10 seconds
+        if (enemy.boxCollision( {
+            box1: cube, 
+            box2: enemy
+        })) {
+            //window.cancelAnimationFrame(animationId);
+            //renderer.setAnimationLoop(null);
+            //renderer.stop
         }
     });
-
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+    if (frames % spawnRate === 0) {
+        if (spawnRate > 20) {
+            spawnRate -= 20;
+        }
+        const enemy = new Box({
+            width: 1,      // x
+            height: 1,     // y
+            depth: 1,      // z
+            color: 'red',
+            velocity: {
+                x: 0,
+                y: 0.001,
+                z: 0.008
+            },
+            position: {
+                x: (Math.random() - 0.5) * 10,
+                y: 0,
+                z: -20
+            },
+            zAcceleration: true
+        });
+        
+        enemy.castShadow = true;
+        scene.add(enemy);
+        enemies.push(enemy);
+    }
+    frames++;
+    //cube.position.y -= 0.01;
 }
-
-function restartGame() {
-    // Reset player cube position
-    cube.position.set(0, 0, 0);
-
-    // Reset enemy cube position
-    enemies.forEach((enemy, index) => {
-        enemy.position.set(0, 0, -4);
-    });
-
-    console.log("Game restarted");
-    resumeGame();
-}
-
-animate(); // Start the animation loop
-
-setInterval(() => {
-    console.log(`FPS: ${frames}`);
-    frames = 0;
-}, 1000);
+renderer.setAnimationLoop( animate );
