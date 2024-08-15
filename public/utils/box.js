@@ -16,6 +16,7 @@ export class Box extends THREE.Mesh {
             y: 0,
             z: 0
         },
+        isEnemy,
         zAcceleration = false
     }) {
         super(
@@ -26,6 +27,7 @@ export class Box extends THREE.Mesh {
         this.width = width;
         this.depth = depth;
         this.color = color;
+        this.isEnemy = isEnemy;
 
         this.position.set(position.x, position.y, position.z);
 

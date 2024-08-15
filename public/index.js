@@ -3,7 +3,9 @@ import { CameraHelper } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Box } from './utils/box.js';
-import { Ground } from './utils/ground.js';
+import { groundMaterial } from './utils/groundMaterial.js';
+import { enemyMaterial } from './utils/cubeMaterial.js';
+import { cubeMaterial } from './utils/cubeMaterial.js';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 
@@ -16,6 +18,7 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer({
     antialias: true
 });
+
 renderer.shadowMap.enabled = true;
 renderer.setSize( 
     window.innerWidth, 
@@ -38,6 +41,9 @@ const cube = new Box({
         z: 0
     }
 });
+
+cube.material = cubeMaterial();
+
 cube.castShadow = true;
 scene.add( cube );
 
@@ -53,7 +59,7 @@ const ground = new Box({
     }
 });
 
-//ground.material = Ground();
+ground.material = groundMaterial();
 
 ground.receiveShadow = true;
 scene.add( ground );
@@ -181,6 +187,8 @@ function animate() {
             },
             zAcceleration: true
         });
+
+        enemy.material = enemyMaterial();
         
         enemy.castShadow = true;
         scene.add(enemy);

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const Ground = () => {
+export const groundMaterial = () => {
     // returns the floor material
     const floorMat = new THREE.MeshStandardMaterial( {
         roughness: 0.8,
