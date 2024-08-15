@@ -5,6 +5,21 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 let gameState = 'playing';
 
+function stopGame() {
+    if (gameState === 'playing') {
+        gameState = 'paused';
+        console.log("Game paused");
+    }
+}
+
+function resumeGame() {
+    if (gameState === 'paused') {
+        gameState = 'playing';
+        console.log("Game resumed");
+        requestAnimationFrame(animate);
+    }
+}
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 
     75, 
@@ -243,6 +258,10 @@ const msPerFrame = 1000 / fps;
 let frames = 0;
 
 function animate() {
+    if (gameState === 'paused') {
+        return;
+    }
+
     const msNow = window.performance.now();
     const msPassed = msNow - msPrev;
 
@@ -256,34 +275,32 @@ function animate() {
 
     frames++;
     
-    if (gameState === 'playing') {
-        // Movement update
-        cube.velocity.x = 0;
-        cube.velocity.z = 0;
+    // Movement update
+    cube.velocity.x = 0;
+    cube.velocity.z = 0;
 
-        if (keys.a.pressed) {
-            cube.velocity.x = -0.05;
-        } else if (keys.d.pressed) {
-            cube.velocity.x = 0.05;
-        }
-
-        if (keys.w.pressed) {
-            cube.velocity.z = -0.05;
-        } else if (keys.s.pressed) {
-            cube.velocity.z = 0.05;
-        }
-
-        cube.update(ground);
-
-        enemies.forEach(enemy => {
-            enemy.update(ground);
-            if (enemy.boxCollision({ box1: cube, box2: enemy })) {
-                console.log("collision detected");
-                gameState = 'paused';
-                setTimeout(restartGame, 10000); // Restart game after 10 seconds
-            }
-        });
+    if (keys.a.pressed) {
+        cube.velocity.x = -0.05;
+    } else if (keys.d.pressed) {
+        cube.velocity.x = 0.05;
     }
+
+    if (keys.w.pressed) {
+        cube.velocity.z = -0.05;
+    } else if (keys.s.pressed) {
+        cube.velocity.z = 0.05;
+    }
+
+    cube.update(ground);
+
+    enemies.forEach(enemy => {
+        enemy.update(ground);
+        if (enemy.boxCollision({ box1: cube, box2: enemy })) {
+            console.log("collision detected");
+            stopGame();
+            setTimeout(restartGame, 10000); // Restart game after 10 seconds
+        }
+    });
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
@@ -298,9 +315,8 @@ function restartGame() {
     enemy.position.set(0, 0, -4);
     enemy.velocity = { x: 0, y: 0.001, z: 0.008 };
 
-    // Set game state back to playing
-    gameState = 'playing';
     console.log("Game restarted");
+    resumeGame();
 }
 
 animate(); // Start the animation loop
