@@ -279,7 +279,7 @@ function animate() {
             if (enemy.boxCollision({ box1: cube, box2: enemy })) {
                 console.log("collision detected");
                 gameState = 'paused';
-                setTimeout(restartGame, 10000); // Restart game after 10 seconds
+                setTimeout(restartGame, 100000000); // Restart game after 10 seconds
             }
         });
     }
