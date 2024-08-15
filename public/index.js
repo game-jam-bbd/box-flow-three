@@ -246,15 +246,16 @@ function animate() {
     const msNow = window.performance.now();
     const msPassed = msNow - msPrev;
 
-    if (msPassed < msPerFrame) return;
+    if (msPassed < msPerFrame) {
+        requestAnimationFrame(animate);
+        return;
+    }
 
     const excessTime = msPassed % msPerFrame;
     msPrev = msNow - excessTime;
 
     frames++;
-    const animationId = window.requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-
+    
     if (gameState === 'playing') {
         // Movement update
         cube.velocity.x = 0;
@@ -279,10 +280,13 @@ function animate() {
             if (enemy.boxCollision({ box1: cube, box2: enemy })) {
                 console.log("collision detected");
                 gameState = 'paused';
-                setTimeout(restartGame, 100000000); // Restart game after 10 seconds
+                setTimeout(restartGame, 10000); // Restart game after 10 seconds
             }
         });
     }
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
 }
 
 function restartGame() {
@@ -296,10 +300,12 @@ function restartGame() {
 
     // Set game state back to playing
     gameState = 'playing';
+    console.log("Game restarted");
 }
 
-renderer.setAnimationLoop(animate); // This handles the loop internally
+animate(); // Start the animation loop
 
 setInterval(() => {
-    console.log(frames);
+    console.log(`FPS: ${frames}`);
+    frames = 0;
 }, 1000);
