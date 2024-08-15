@@ -9,6 +9,12 @@ function stopGame() {
     if (gameState === 'playing') {
         gameState = 'paused';
         console.log("Game paused");
+        
+        // Halt all objects
+        cube.velocity = { x: 0, y: 0, z: 0 };
+        enemies.forEach(enemy => {
+            enemy.velocity = { x: 0, y: 0, z: 0 };
+        });
     }
 }
 
@@ -16,6 +22,15 @@ function resumeGame() {
     if (gameState === 'paused') {
         gameState = 'playing';
         console.log("Game resumed");
+        
+        // Reset object velocities
+        cube.velocity = { x: 0, y: -0.00005, z: 0 };
+        enemies.forEach((enemy, index) => {
+            enemy.velocity = { x: 0, y: 0.001, z: 0.008 };
+        });
+        
+        // Restart the animation loop
+        msPrev = window.performance.now();
         requestAnimationFrame(animate);
     }
 }
@@ -307,13 +322,13 @@ function animate() {
 }
 
 function restartGame() {
-    // Reset player cube position and velocity
+    // Reset player cube position
     cube.position.set(0, 0, 0);
-    cube.velocity = { x: 0, y: -0.00005, z: 0 };
 
-    // Reset enemy cube position and velocity
-    enemy.position.set(0, 0, -4);
-    enemy.velocity = { x: 0, y: 0.001, z: 0.008 };
+    // Reset enemy cube position
+    enemies.forEach((enemy, index) => {
+        enemy.position.set(0, 0, -4);
+    });
 
     console.log("Game restarted");
     resumeGame();
