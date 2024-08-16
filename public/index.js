@@ -148,7 +148,7 @@ let spawnRate = 200;
 
 async function initGame() {
     try {
-        await audioManager.loadBackgroundMusic('/audio/background_music.mp3');
+        await audioManager.loadBackgroundMusic('./audio/background_music.mp3');
         audioManager.playBackgroundMusic();
     } catch (error) {
         console.error("Failed to load or play background music:", error);

@@ -15,6 +15,7 @@ export class AudioManager {
             this.backgroundMusic = await this.audioContext.decodeAudioData(arrayBuffer);
         } catch (error) {
             console.error("Error loading audio:", error);
+            console.error("Attempted to load from URL:", url);
             // Optionally, set a flag or call a method to handle the error in the game
         }
     }
