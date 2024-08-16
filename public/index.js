@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import { CameraHelper } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import WebGL from 'three/addons/capabilities/WebGL.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Box } from './utils/box.js';
 import { groundMaterial } from './utils/groundMaterial.js';
 import { enemyMaterial } from './utils/cubeMaterial.js';
 import { cubeMaterial } from './utils/cubeMaterial.js';
+import { boxCollision } from './utils/box.js';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 
@@ -39,7 +41,8 @@ const cube = new Box({
         x: 0,
         y: -0.00005,
         z: 0
-    }
+    },
+    isEnemy: false
 });
 
 cube.material = cubeMaterial();
@@ -56,7 +59,8 @@ const ground = new Box({
         x: 0,
         y: -2,
         z: 0
-    }
+    },
+    isEnemy: false
 });
 
 ground.material = groundMaterial();
@@ -86,10 +90,14 @@ const keys = {
     },
     s: {
         pressed: false
+    },
+    space: {
+        pressed: false
     }
 };
 
 window.addEventListener('keydown', (event) => {
+    //console.log(event.code);
     switch (event.code) {
         case 'KeyA':
             keys.a.pressed = true;
@@ -103,11 +111,15 @@ window.addEventListener('keydown', (event) => {
         case 'KeyS':
             keys.s.pressed = true;
             break;
+        case 'Space':
+            keys.space.pressed = true;
+            break;
         
     }
 });
 
 window.addEventListener('keyup', (event) => {
+    //console.log(event.code);
     switch (event.code) {
         case 'KeyA':
             keys.a.pressed = false;
@@ -120,6 +132,9 @@ window.addEventListener('keyup', (event) => {
             break;
         case 'KeyS':
             keys.s.pressed = false;
+            break;
+        case 'Space':
+            keys.space.pressed = false;
             break;
     }
 });
@@ -154,16 +169,20 @@ function animate() {
     else if (keys.s.pressed) {
         cube.velocity.z = 0.09;
     }
+
+    if (keys.space.pressed) {
+        cube.velocity.y = -0.13;
+    }
+
     cube.update(ground);
     enemies.forEach(enemy => {
         enemy.update(ground);
-        if (enemy.boxCollision( {
-            box1: cube, 
-            box2: enemy
-        })) {
+        if (boxCollision( { box1: cube, box2: enemy })) {
             //window.cancelAnimationFrame(animationId);
             //renderer.setAnimationLoop(null);
             //renderer.stop
+            console.log("Game over chief!");
+            renderer.setAnimationLoop( null );
         }
     });
     if (frames % spawnRate === 0) {
@@ -185,6 +204,7 @@ function animate() {
                 y: 0,
                 z: -20
             },
+            isEnemy: true,
             zAcceleration: true
         });
 
@@ -197,4 +217,5 @@ function animate() {
     frames++;
     //cube.position.y -= 0.01;
 }
+
 renderer.setAnimationLoop( animate );
