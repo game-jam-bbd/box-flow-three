@@ -218,4 +218,7 @@ function animate() {
     //cube.position.y -= 0.01;
 }
 
-renderer.setAnimationLoop( animate );
+document.getElementById('startButton').addEventListener('click', () => {
+    document.getElementById('startOverlay').style.display = 'none';
+    initGame();
+});
