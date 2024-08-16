@@ -28,7 +28,7 @@ async function startGame() {
 
     audioManager = new AudioManager();
     try {
-        await audioManager.loadBackgroundMusic("./music/m1.mpeg");
+        await audioManager.loadBackgroundMusic("./music/m4.mpeg");
         audioManager.playBackgroundMusic();
     } catch (error) {
         console.error("Failed to load and play music:", error);
@@ -52,10 +52,13 @@ function animate() {
     // movement update
     cube.velocity.x = 0; // for every frame, reset velocity
     cube.velocity.z = 0;
+    
     if (keys.a.pressed) cube.velocity.x = -0.09;
     else if (keys.d.pressed) cube.velocity.x = 0.09;
+
     if (keys.w.pressed) cube.velocity.z = -0.09;
     else if (keys.s.pressed) cube.velocity.z = 0.09;
+
     if (keys.space.pressed) cube.velocity.y = -0.13;
 
     cube.update(ground);
