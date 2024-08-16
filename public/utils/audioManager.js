@@ -6,10 +6,17 @@ export class AudioManager {
     }
 
     async loadBackgroundMusic(url) {
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-        this.backgroundMusic = audioBuffer;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            this.backgroundMusic = await this.audioContext.decodeAudioData(arrayBuffer);
+        } catch (error) {
+            console.error("Error loading audio:", error);
+            // Optionally, set a flag or call a method to handle the error in the game
+        }
     }
 
     playBackgroundMusic() {
