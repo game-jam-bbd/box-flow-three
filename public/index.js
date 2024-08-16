@@ -5,21 +5,50 @@ import { enemyMaterial } from './utils/cubeMaterial.js';
 import { boxCollision } from './utils/box.js';
 import { AudioManager } from './utils/audioManager.js';
 
-const { scene, camera, renderer, controls, cube, ground } = initializeGame();
-setupControls();
-
-const audioManager = new AudioManager();
-
-audioManager.loadBackgroundMusic("./music/m1.mpeg")
-    .then(() => audioManager.playBackgroundMusic())
-    .catch(error => console.error("Failed to load and play music:", error));
-
-setupControls();
-
+let scene, camera, renderer, controls, cube, ground;
+let audioManager;
 const enemies = [];
-
 let frames = 0;
 let spawnRate = 200;
+let animationId;
+
+document.getElementById('startButton').addEventListener('click', startGame);
+document.getElementById('muteButton').addEventListener('click', toggleMute);
+
+async function startGame() {
+    const gameInit = initializeGame();
+    scene = gameInit.scene;
+    camera = gameInit.camera;
+    renderer = gameInit.renderer;
+    controls = gameInit.controls;
+    cube = gameInit.cube;
+    ground = gameInit.ground;
+
+    setupControls();
+
+    audioManager = new AudioManager();
+    try {
+        await audioManager.loadBackgroundMusic("./music/m1.mpeg");
+        audioManager.playBackgroundMusic();
+    } catch (error) {
+        console.error("Failed to load and play music:", error);
+    }
+
+    document.getElementById('startOverlay').style.display = 'none';
+    document.getElementById('gameOverlay').style.display = 'block';
+
+    animate();
+}
+
+function toggleMute() {
+    if (audioManager.isMuted()) {
+        audioManager.unmute();
+        document.getElementById('muteButton').textContent = 'Mute';
+    } else {
+        audioManager.mute();
+        document.getElementById('muteButton').textContent = 'Unmute';
+    }
+}
 
 function animate() {
     //const deltaTime = time - lastTime;

@@ -3,6 +3,9 @@ export class AudioManager {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.backgroundMusic = null;
         this.isPlaying = false;
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.connect(this.audioContext.destination);
+        this._muted = false;
     }
 
     async loadBackgroundMusic(url) {
@@ -33,7 +36,7 @@ export class AudioManager {
         if (this.backgroundMusic && !this.isPlaying) {
             const source = this.audioContext.createBufferSource();
             source.buffer = this.backgroundMusic;
-            source.connect(this.audioContext.destination);
+            source.connect(this.gainNode);
             source.loop = true;
             source.start();
             this.isPlaying = true;
@@ -42,9 +45,26 @@ export class AudioManager {
 
     stopBackgroundMusic() {
         if (this.isPlaying) {
+            this.gainNode.disconnect();
             this.audioContext.close();
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.gainNode = this.audioContext.createGain();
+            this.gainNode.connect(this.audioContext.destination);
             this.isPlaying = false;
         }
+    }
+
+    mute() {
+        this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        this._muted = true;
+    }
+
+    unmute() {
+        this.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);
+        this._muted = false;
+    }
+
+    isMuted() {
+        return this._muted;
     }
 }
