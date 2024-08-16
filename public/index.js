@@ -37,8 +37,15 @@ async function startGame() {
     document.getElementById('startOverlay').style.display = 'none';
     document.getElementById('gameOverlay').style.display = 'block';
 
-    animate();
+    if (renderer) {
+        renderer.setAnimationLoop(animate);
+    } else {
+        console.error("Renderer is not initialized");
+    }
 }
+
+function animate() {
+    if (!renderer) return;
 
 function toggleMute() {
     if (audioManager.isMuted()) {
