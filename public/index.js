@@ -1,82 +1,14 @@
-import * as THREE from 'three';
-import { CameraHelper } from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import WebGL from 'three/addons/capabilities/WebGL.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { initializeGame } from './js/gameInit.js';
+import { setupControls, keys } from './js/controls.js';
 import { Box } from './utils/box.js';
-import { groundMaterial } from './utils/groundMaterial.js';
 import { enemyMaterial } from './utils/cubeMaterial.js';
-import { cubeMaterial } from './utils/cubeMaterial.js';
 import { boxCollision } from './utils/box.js';
+import { AudioManager } from './utils/audioManager.js';
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 
-    75, 
-    window.innerWidth / window.innerHeight, 
-    0.1, 
-    1000 
-);
+const { scene, camera, renderer, controls, cube, ground } = initializeGame();
+setupControls();
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
-
-renderer.shadowMap.enabled = true;
-renderer.setSize( 
-    window.innerWidth, 
-    window.innerHeight 
-);
-
-
-document.body.appendChild( renderer.domElement );
-
-const controls = new OrbitControls(camera, renderer.domElement);
-
-const cube = new Box({
-    width: 1,      // x
-    height: 1,     // y
-    depth: 1,      // z
-    color: 0x00ff00,
-    velocity: {
-        x: 0,
-        y: -0.00005,
-        z: 0
-    },
-    isEnemy: false
-});
-
-cube.material = cubeMaterial();
-
-cube.castShadow = true;
-scene.add( cube );
-
-const ground = new Box({
-    width: 10,
-    height: 0.5,
-    depth: 50,
-    color: "#0369a1",
-    position: {
-        x: 0,
-        y: -2,
-        z: 0
-    },
-    isEnemy: false
-});
-
-ground.material = groundMaterial();
-
-ground.receiveShadow = true;
-scene.add( ground );
-
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.castShadow = true;
-light.position.y = 4;
-light.position.z = 1;
-scene.add( light );
-
-scene.add( new THREE.AmbientLight(0xffffff, 0.5) );
-
-camera.position.z = 5;
+const audioManager = new AudioManager();
 
 const keys = {
     a: {
