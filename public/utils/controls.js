@@ -17,7 +17,7 @@ export function setupControls() {
             case 'KeyS': keys.s.pressed = true; break;
             case 'Space': keys.space.pressed = true; break;
         }
-    });
+    };
 
     window.addEventListener('keyup', (event) => {
         switch (event.code) {
