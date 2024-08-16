@@ -1,5 +1,5 @@
-import { initializeGame } from './js/gameInit.js';
-import { setupControls, keys } from './js/controls.js';
+import { initializeGame } from './utils/gameInit.js';
+import { setupControls, keys } from './utils/controls.js';
 import { Box } from './utils/box.js';
 import { enemyMaterial } from './utils/cubeMaterial.js';
 import { boxCollision } from './utils/box.js';
@@ -10,66 +10,11 @@ setupControls();
 
 const audioManager = new AudioManager();
 
-const keys = {
-    a: {
-        pressed: false
-    },
-    d: {
-        pressed: false
-    },
-    w: {
-        pressed: false
-    },
-    s: {
-        pressed: false
-    },
-    space: {
-        pressed: false
-    }
-};
+audioManager.loadBackgroundMusic("./music/m1.mpeg")
+    .then(() => audioManager.playBackgroundMusic())
+    .catch(error => console.error("Failed to load and play music:", error));
 
-window.addEventListener('keydown', (event) => {
-    //console.log(event.code);
-    switch (event.code) {
-        case 'KeyA':
-            keys.a.pressed = true;
-            break;
-        case 'KeyD':
-            keys.d.pressed = true;
-            break;
-        case 'KeyW':
-            keys.w.pressed = true;
-            break;
-        case 'KeyS':
-            keys.s.pressed = true;
-            break;
-        case 'Space':
-            keys.space.pressed = true;
-            break;
-        
-    }
-});
-
-window.addEventListener('keyup', (event) => {
-    //console.log(event.code);
-    switch (event.code) {
-        case 'KeyA':
-            keys.a.pressed = false;
-            break;
-        case 'KeyD':
-            keys.d.pressed = false;
-            break;
-        case 'KeyW':
-            keys.w.pressed = false;
-            break;
-        case 'KeyS':
-            keys.s.pressed = false;
-            break;
-        case 'Space':
-            keys.space.pressed = false;
-            break;
-    }
-});
+setupControls();
 
 const enemies = [];
 
