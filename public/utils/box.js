@@ -68,31 +68,16 @@ export class Box extends THREE.Mesh {
         this.velocity.z += 0.001;
         
         this.position.x += this.velocity.x;
-        this.position.z += this.velocity.z; // will uncomment if we want cube to move to the front
+        this.position.z += this.velocity.z; 
 
-        // detect collision for x axis
         const xCollision = this.right >= ground.left && this.left <= ground.right;
         const zCollision = this.front <= ground.front && this.back >= ground.back;
-        if (xCollision && zCollision) {
-            //this.velocity.x = 0;
-
-        }
 
         this.applyGravity(ground);
     }
 
     applyGravity(ground) {
         this.velocity.y += this.gravity;
-
-        //if (this.bottom + this.velocity.y <= ground.top) {
-        //    // everytime we hit the ground
-        //    //this.velocity.y *= 0.8; // increase the decelaration 
-        //    this.velocity.y = -this.velocity.y;
-        //}
-        //else {
-        //    // otherwise, keep fallin
-        //    this.position.y += this.velocity.y;
-        //}
         if (boxCollision({
             box1: this,
             box2: ground

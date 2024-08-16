@@ -52,7 +52,7 @@ function animate() {
     // movement update
     cube.velocity.x = 0; // for every frame, reset velocity
     cube.velocity.z = 0;
-    
+
     if (keys.a.pressed) cube.velocity.x = -0.09;
     else if (keys.d.pressed) cube.velocity.x = 0.09;
 
@@ -73,10 +73,19 @@ function animate() {
     if (frames % spawnRate === 0) {
         if (spawnRate > 20) spawnRate -= 20;
         const enemy = new Box({
-            width: 1, height: 1, depth: 1,
-            color: 'red',
-            velocity: { x: 0, y: 0.001, z: 0.008 },
-            position: { x: (Math.random() - 0.5) * 10, y: 0, z: -20 },
+            width: 1, 
+            height: 1, 
+            depth: 1,
+            velocity: { 
+                x: 0, 
+                y: 0.001, 
+                z: 0.008 
+            },
+            position: { 
+                x: (Math.random() - 0.5) * 10, 
+                y: 0, 
+                z: -20 
+            },
             isEnemy: true,
             zAcceleration: true
         });
