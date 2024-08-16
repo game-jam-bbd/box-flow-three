@@ -8,8 +8,10 @@ import { groundMaterial } from './utils/groundMaterial.js';
 import { enemyMaterial } from './utils/cubeMaterial.js';
 import { cubeMaterial } from './utils/cubeMaterial.js';
 import { boxCollision } from './utils/box.js';
+import { AudioManager } from './utils/audioManager.js';
 
 const scene = new THREE.Scene();
+const audioManager = new AudioManager();
 const camera = new THREE.PerspectiveCamera( 
     75, 
     window.innerWidth / window.innerHeight, 
@@ -144,13 +146,13 @@ const enemies = [];
 let frames = 0;
 let spawnRate = 200;
 
-function animate() {
-    //const deltaTime = time - lastTime;
+async function initGame() {
+    await audioManager.loadBackgroundMusic('/audio/background_music.mp3');
+    audioManager.playBackgroundMusic();
+    animate();
+}
 
-    //const animationId = window.requestAnimationFrame( animate );
-    //const animationId = renderer.requestAnimationFrame( animate );
-    //cube.rotation.x += 0.05;
-    //cube.rotation.y += 0.05;
+function animate() {
     renderer.render( scene, camera );
 
     // movement update
@@ -218,4 +220,7 @@ function animate() {
     //cube.position.y -= 0.01;
 }
 
-renderer.setAnimationLoop( animate );
+document.getElementById('startButton').addEventListener('click', () => {
+    document.getElementById('startOverlay').style.display = 'none';
+    initGame();
+});
