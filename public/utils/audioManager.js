@@ -55,14 +55,16 @@ export class AudioManager {
     }
 
     mute() {
-        this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        // Smoothly reduce the volume to 0 to avoid clicking sounds
+        this.gainNode.gain.setTargetAtTime(0, this.audioContext.currentTime, 0.01);
         this._muted = true;
     }
-
+    
     unmute() {
-        this.gainNode.gain.setValueAtTime(1, this.audioContext.currentTime);
+        // Smoothly restore the volume to 1 to avoid clicking sounds
+        this.gainNode.gain.setTargetAtTime(1, this.audioContext.currentTime, 0.01);
         this._muted = false;
-    }
+    }    
 
     isMuted() {
         return this._muted;

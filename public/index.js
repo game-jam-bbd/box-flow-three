@@ -1,16 +1,18 @@
 import { initializeGame } from './utils/gameInit.js';
 import { setupControls, keys } from './utils/controls.js';
-import { Box } from './utils/box.js';
-import { enemyMaterial } from './utils/cubeMaterial.js';
-import { boxCollision } from './utils/box.js';
+import { createEnemy, createCoin } from './utils/createObject.js';
+import { boxCollision, coinCollision } from './utils/box.js';
 import { AudioManager } from './utils/audioManager.js';
+import * as THREE from 'three';
 
-let scene, camera, renderer, controls, cube, ground;
+let scene, camera, renderer, controls, boat, ocean;
 let audioManager;
 const enemies = [];
+const coins = [];
 let frames = 0;
-let spawnRate = 200;
+let spawnRate = 250;
 let animationId;
+const clock = new THREE.Clock();
 
 document.getElementById('startButton').addEventListener('click', startGame);
 document.getElementById('muteButton').addEventListener('click', toggleMute);
@@ -21,27 +23,20 @@ async function startGame() {
     camera = gameInit.camera;
     renderer = gameInit.renderer;
     controls = gameInit.controls;
-    cube = gameInit.cube;
-    ground = gameInit.ground;
+    boat = gameInit.boat;
+    ocean = gameInit.ocean;
 
     setupControls();
 
     audioManager = new AudioManager();
-    try {
-        await audioManager.loadBackgroundMusic("./music/m4.mpeg");
-        audioManager.playBackgroundMusic();
-    } catch (error) {
-        console.error("Failed to load and play music:", error);
-    }
+
+    await audioManager.loadBackgroundMusic("./music/m4.mpeg");
+    audioManager.playBackgroundMusic();
 
     document.getElementById('startOverlay').style.display = 'none';
     document.getElementById('gameOverlay').style.display = 'block';
 
-    if (renderer) {
-        renderer.setAnimationLoop(animate);
-    } else {
-        console.error("Renderer is not initialized");
-    }
+    renderer.setAnimationLoop(animate);
 }
 
 function animate() {
@@ -49,50 +44,72 @@ function animate() {
 
     renderer.render(scene, camera);
 
+    ocean.material.uniforms[ 'time' ].value += 0.006;
+
     // movement update
-    cube.velocity.x = 0; // for every frame, reset velocity
-    cube.velocity.z = 0;
+    boat.velocity.x = 0; // for every frame, reset velocity
+    boat.velocity.z = 0;
 
-    if (keys.a.pressed) cube.velocity.x = -0.09;
-    else if (keys.d.pressed) cube.velocity.x = 0.09;
+    if (keys.a.pressed) boat.velocity.x = -0.09;
+    else if (keys.d.pressed) boat.velocity.x = 0.09;
 
-    if (keys.w.pressed) cube.velocity.z = -0.09;
-    else if (keys.s.pressed) cube.velocity.z = 0.09;
+    //if (keys.w.pressed) boat.velocity.z = -0.09;
+    //else if (keys.s.pressed) boat.velocity.z = 0.09;
 
-    if (keys.space.pressed) cube.velocity.y = -0.13;
+    if (keys.space.pressed) boat.velocity.y = -0.75;
 
-    cube.update(ground);
+    //camera.position.set(boat.position.x+2, boat.position.y + 4, boat.position.z+8);
+    //camera.lookAt(boat.position.x, boat.position.y + 2, boat.position.z + 5);
+    const deltaTime = clock.getDelta();
+    boat.update(deltaTime);
+    const time = performance.now() * 0.001;
+    //controls.target.set(cube.position.x, cube.position.y, cube.position.z);
     enemies.forEach(enemy => {
-        enemy.update(ground);
-        if (boxCollision({ box1: cube, box2: enemy })) {
-            console.log("Game over chief!");
-            renderer.setAnimationLoop(null);
+        if (enemy.position.z >= 100) {
+            scene.remove(enemy);
+            const index = enemies.indexOf(enemy);
+            enemies.splice(index, 1);
+        }
+        else {
+            enemy.update();
+            enemy.rotation.x = time * 0.25;
+            enemy.rotation.z = time * 0.51;
+            //if (boxCollision({ box1: cube, box2: enemy })) {
+            //    console.log("Game over chief!");
+            //    renderer.setAnimationLoop(null);
+            //}
+        }
+    });
+
+    coins.forEach(coin => {
+        if (coin.position.z >= 100) {
+            //scene.remove(coin);
+            coin.removeCoin();
+            const index = coins.indexOf(coin);
+            coins.splice(index, 1);
+        }
+        else {
+            coin.update();
+            //if (coinCollision({ box: cube, coin: coin  })) {
+            //    coin.removeCoin();
+            //    const index = coins.indexOf(coin);
+            //    coins.splice(index, 1);
+            //}
         }
     });
 
     if (frames % spawnRate === 0) {
         if (spawnRate > 20) spawnRate -= 20;
-        const enemy = new Box({
-            width: 1, 
-            height: 1, 
-            depth: 1,
-            velocity: { 
-                x: 0, 
-                y: 0.001, 
-                z: 0.008 
-            },
-            position: { 
-                x: (Math.random() - 0.5) * 10, 
-                y: 0, 
-                z: -20 
-            },
-            isEnemy: true,
-            zAcceleration: true
-        });
-        enemy.material = enemyMaterial();
-        enemy.castShadow = true;
-        scene.add(enemy);
-        enemies.push(enemy);
+
+        if (Math.random() > 0.5) {
+            const enemy = createEnemy();
+            scene.add(enemy);
+            enemies.push(enemy);
+        }
+        else {
+            const coin = createCoin(scene);
+            coins.push(coin);
+        }
     }
     frames++;
 }

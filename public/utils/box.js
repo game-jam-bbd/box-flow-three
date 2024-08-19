@@ -5,7 +5,7 @@ export class Box extends THREE.Mesh {
         width, 
         height, 
         depth, 
-        color, 
+        //color, 
         velocity = {
             x: 0,
             y: 0,
@@ -13,20 +13,20 @@ export class Box extends THREE.Mesh {
         },
         position = {
             x: 0,
-            y: 0,
+            y: 2.5,
             z: 0
         },
-        isEnemy,
+        isEnemy = false,
         zAcceleration = false
     }) {
         super(
             new THREE.BoxGeometry( width, height, depth ), 
-            new THREE.MeshStandardMaterial( { color } )
+            new THREE.MeshStandardMaterial()
         );
         this.height = height;
         this.width = width;
         this.depth = depth;
-        this.color = color;
+        //this.color = color;
         this.isEnemy = isEnemy;
 
         this.position.set(position.x, position.y, position.z);
@@ -57,7 +57,7 @@ export class Box extends THREE.Mesh {
         this.back = this.position.z - this.depth / 2;
     }
 
-    update(ground) {
+    update() {        
 
         this.updateSides();
 
@@ -70,18 +70,16 @@ export class Box extends THREE.Mesh {
         this.position.x += this.velocity.x;
         this.position.z += this.velocity.z; 
 
-        const xCollision = this.right >= ground.left && this.left <= ground.right;
-        const zCollision = this.front <= ground.front && this.back >= ground.back;
+        //if (this.isEnemy) {
+        this.applyGravity();
+        //}
 
-        this.applyGravity(ground);
+
     }
 
-    applyGravity(ground) {
+    applyGravity() {
         this.velocity.y += this.gravity;
-        if (boxCollision({
-            box1: this,
-            box2: ground
-        })) {
+        if (this.bottom + this.velocity.y <= -0.75) {
             const friction = 0.8;
             this.velocity.y *= friction;
             this.velocity.y = -this.velocity.y;
@@ -99,5 +97,15 @@ export const boxCollision = ({ box1, box2 }) => {
       box1.bottom + box1.velocity.y <= box2.top && box1.top >= box2.bottom;
     const zCollision = box1.front >= box2.back && box1.back <= box2.front;
 
+    return xCollision && yCollision && zCollision;
+};
+
+export const coinCollision = ({ box, coin }) => {
+    // detect collision on box from every angle
+    const xCollision = box.right >= coin.position.x && box.left <= coin.position.x;
+    const yCollision =
+        box.bottom + box.velocity.y <= coin.position.y && box.top >= coin.position.y;
+    const zCollision = box.front >= coin.position.z && box.back <= coin.position.z;
+ 
     return xCollision && yCollision && zCollision;
 };
