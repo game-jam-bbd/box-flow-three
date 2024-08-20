@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AudioManager } from './audioManager.js';
 import { createWater, createSky, createSun } from './environment.js';
-import { createDolphin } from './createObject.js';
+import { createDolphin } from './createObstacle.js';
 
 
 export const initializeGame = () => {
@@ -18,8 +18,8 @@ export const initializeGame = () => {
     //camera.lookAt()
     const controls = new OrbitControls(camera, renderer.domElement);
 
-    const boat = createDolphin(scene);
-    scene.add(boat);
+    const dolphin = createDolphin(scene);
+    scene.add(dolphin);
 
     const ocean = createWater(scene);
     scene.add(ocean);
@@ -40,5 +40,5 @@ export const initializeGame = () => {
 
     const audioManager = new AudioManager();
 
-    return { scene, camera, renderer, controls, boat, ocean, audioManager };
+    return { scene, camera, renderer, controls, dolphin, ocean, audioManager };
 };

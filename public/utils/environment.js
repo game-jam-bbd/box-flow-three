@@ -3,12 +3,12 @@ import { Water } from 'three/addons/objects/Water.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 
 export const createWater = (scene) => {
-    const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
+    const waterGeometry = new THREE.PlaneGeometry(500, 500);
     const water = new Water(
         waterGeometry,
         {
-            textureWidth: 512,
-            textureHeight: 512,
+            textureWidth: 500,
+            textureHeight: 500,
             waterNormals: new THREE.TextureLoader().load('../textures/waternormals.jpg', function(texture) {
                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
             }),

@@ -1,20 +1,18 @@
 import * as THREE from 'three';
-import { coinCollision } from './box.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { BoundingBox } from 'three/addons/libs/opentype.module.js';
 
 export class Dolphin {
 
     constructor({
         scene,
         scale = {
-            x: 1.5,
-            y: 1.5,
-            z: 1.5   
+            x: 0.25,//1.5,
+            y: 0.25,//1.5,
+            z: 0.25,//1.5   
         },
         position = {
             x: 0,
-            y: 4,
+            y: 2.5, //4
             z: 0
         },
         velocity = {
@@ -32,7 +30,7 @@ export class Dolphin {
         this.position = position;
         this.velocity = velocity;
         this.zAcceleration = zAcceleration;
-        this.gravity = -0.02;
+        this.gravity = -0.015;
         this.boundingBox = new THREE.Box3();
         this.dimensions = { 
             width: 0, 
@@ -54,17 +52,10 @@ export class Dolphin {
 
     loadModel() {
         const loader = new GLTFLoader();
-        loader.load('../models/dolphin2.glb', (gltf) => {
+        loader.load('../models/dolphin.glb', (gltf) => {
             this.mesh = gltf.scene;
             this.mixer = new THREE.AnimationMixer(this.mesh);
-            // Assuming the first animation in the GLTF file is the swim animation
             this.swimAction = this.mixer.clipAction(gltf.animations[0]);
-
-            console.log(gltf);
-            console.log("======================");
-            console.log(gltf.animations);
-            console.log("======================");
-            console.log(this.swimAction);
             
             this.swimAction.play();
             this.mesh.scale.set(this.scale.x, this.scale.y, this.scale.z);
@@ -125,7 +116,7 @@ export class Dolphin {
 
     applyGravity() {
         this.velocity.y += this.gravity;
-        if ((this.bottom+1.25) + this.velocity.y <= -0.75) {
+        if ((this.bottom+0.5) + this.velocity.y <= -0.75) {
             const friction = 0.5;
             this.velocity.y *= friction;
             this.velocity.y = -this.velocity.y;
